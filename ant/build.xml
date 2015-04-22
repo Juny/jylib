@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="KrakenBuilder" default="all" xmlns:artifact="urn:maven-artifact-ant">
+	<description>
+	</description>
+
+	<property name="path.target.name" value="kraken-rcs" />
+	<property file="build.properties" />
+	<property name="resource.ant" value="ant" />
+	<property name="path.package" value="runtime" />
+	<property name="path.package.lib" value="lib" />
+	<property name="path.package.bin" value="bin" />
+	<property name="path.package.log" value="log" />
+	<property name="path.package.apps" value="apps" />
+	<property name="path.package.config" value="config" />
+	<property name="path.package.data" value="data" />
+	
+
+	<target name="init_maven">
+		<!--
+        remember to set M2_REPO before use this build.xml, for example in eclispe:
+        "Window→Preferences→Ant→Runtime", add a new property named "M2_REPO" and set it value point to the path of your maven
+        local repository; Or you can set it in build.properties.  You need do one (and only one) of them.
+        -->
+		<echo>M2_REPO directory : ${M2_REPO}</echo>
+		<path id="maven-ant-tasks.classpath" path="${M2_REPO}/org/apache/maven/maven-ant-tasks/2.1.3/maven-ant-tasks-2.1.3.jar" />
+		<typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="urn:maven-artifact-ant" classpathref="maven-ant-tasks.classpath" />
+
+		<artifact:pom id="maven.project" file="pom.xml" />
+		<artifact:dependencies pathId="classpath.build" filesetid="maven.fileset.build">
+			<pom refid="maven.project" />
+		</artifact:dependencies>
+		<artifact:dependencies pathId="classpath.runtime" filesetid="maven.fileset.runtime" useScope="runtime">
+			<pom refid="maven.project" />
+		</artifact:dependencies>
+	</target>
+
+	<target name="all" depends="datetime, init_path, compile, jar, package, zip" description="do all">
+		<echo>begin to do all target to build the result package.</echo>
+	</target>
+	
+    <target name="datetime">        
+        <tstamp/>
+        <!--以下的几个属性是系统自带的,初始了tstamp之后,它们就有值了-->
+        <echo message="System:"/>
+        <echo message="DSTAMP = ${DSTAMP}"/>
+        <echo message="TSTAMP = ${TSTAMP}"/>
+        <echo message="TODAY = ${TODAY}"/>
+    </target>
+    <!--下面设置我自己的日期时间格式-->
+    <tstamp prefix="my">
+        <format property="day" pattern="yyyy-MM-dd"/>
+        <format property="time" pattern="HH:mm:ss"/>
+        <format property="dt" pattern="yyyyMMddHHmmssSSS"/>
+    </tstamp>
+
+	<target name="maven_info" depends="init_maven">
+		<echo>Maven build directory is ${maven.project.build.directory}</echo>
+		<echo>Maven build finalName is ${maven.project.build.finalName}</echo>
+		<echo>Maven build sourceDirectory directory is ${maven.project.build.sourceDirectory}</echo>
+		<echo>Maven build outputDirectory directory is ${maven.project.build.outputDirectory}</echo>
+		<echo>Maven build scriptSourceDirectory directory is ${maven.project.build.testSourceDirectory}</echo>
+		<echo>Maven build testOutputDirectory directory is ${maven.project.build.testOutputDirectory}</echo>
+		<echo>Maven build scriptSourceDirectory directory is ${maven.project.build.scriptSourceDirectory}</echo>
+		<echo>Maven build resourceDirectory directory is ${maven.project.build.resources}</echo>
+
+		<property name="target.jar.name" value="${maven.project.build.directory}/${maven.project.build.finalName}.jar" />
+		<echo>Maven build scriptSourceDirectory directory is ${target.jar.name}</echo>
+	</target>
+
+	<target name="clean" depends="init_maven">
+		<echo>clean build directory : ${maven.project.build.directory}</echo>
+		<delete dir="${maven.project.build.directory}" includes="**/*" />
+	</target>
+
+	<target name="init_path" depends="maven_info, clean">
+		<echo>make dir for java compile: ${maven.project.build.outputDirectory}</echo>
+		<mkdir dir="${maven.project.build.outputDirectory}" />
+	</target>
+
+	<target name="compile" description="description" depends="init_maven">
+		<echo>make dir for java compile: ${maven.project.build.sourceDirectory}</echo>
+		<javac srcdir="${maven.project.build.sourceDirectory}\" destdir="${maven.project.build.outputDirectory}" classpathref="classpath.build" debug="true" debuglevel="lines,vars,source"/>
+	</target>
+
+	<target name="jar" depends="compile">
+		<echo>make dir : ${maven.project.build.outputDirectory}</echo>
+		<delete dir="${maven.project.build.outputDirectory}/apps" failonerror="false" />
+		<delete dir="${maven.project.build.outputDirectory}/bin" failonerror="false" />
+		<delete file="${maven.project.build.directory}/${maven.project.build.finalName}.jar" failonerror="false" />
+		<jar destfile="${maven.project.build.directory}/${maven.project.build.finalName}.jar" basedir="${maven.project.build.outputDirectory}">
+		</jar>
+	</target>
+
+	<target name="package" depends="package_prepare, copyMe, copyLib, copyConfig, copyData, zip" />
+
+	<target name="package_prepare" depends="init_maven">
+		<echo>clean package directory : ${maven.project.build.directory}/${path.package}</echo>
+		<delete dir="${maven.project.build.directory}/${path.package}" failonerror="false" />
+		<mkdir dir="${maven.project.build.directory}/${path.package}" />
+		<mkdir dir="${maven.project.build.directory}/${path.package}/${path.target.name}" />
+		<mkdir dir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.lib}" />
+		<mkdir dir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.bin}" />
+		<mkdir dir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.log}" />
+		<mkdir dir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.apps}" />
+		<mkdir dir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.config}" />
+
+	</target>
+
+	<target name="copyMe" depends="jar">
+		<echo>copyMe : ${maven.project.build.directory}/${maven.project.build.finalName}.jar  to   ${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.lib}</echo>
+		<copy todir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.lib}" file="${maven.project.build.directory}/${maven.project.build.finalName}.jar">
+		</copy>
+	</target>
+	<target name="copyLib" depends="init_maven">
+		<copy todir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.lib}">
+			<fileset refid="maven.fileset.runtime" />
+			<mapper type="flatten" />
+		</copy>
+		<copy todir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.lib}" file="${maven.project.build.directory}/${maven.project.build.finalName}.jar">
+		</copy>
+	</target>
+	<target name="copyConfig" depends="init_maven">
+		<echo>copyConfig to ${maven.project.build.directory}/${path.package}/${path.target.name}</echo>
+		<copy todir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.config}">
+			<fileset dir="resources/config">
+			</fileset>
+		</copy>
+		<copy todir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.bin}">
+			<fileset dir="resources/bin">
+			</fileset>
+		</copy>
+	</target>
+	<target name="copyData" depends="init_maven">
+		<echo>copyData : ${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.data}</echo>
+		<copy todir="${maven.project.build.directory}/${path.package}/${path.target.name}/${path.package.data}">
+			<fileset dir="resources/data">
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="zip" depends="init_maven">
+		<zip destfile="${maven.project.build.directory}/${path.package}/${path.target.name}-${my.dt}.zip">
+			<fileset dir="${maven.project.build.directory}/${path.package}/${path.target.name}">
+			</fileset>
+		</zip>
+		<tar longfile="gnu" destfile="${maven.project.build.directory}/${path.package}/${path.target.name}-${my.dt}.tar">
+			<tarfileset dir="${maven.project.build.directory}/${path.package}/${path.target.name}/"
+				filemode="755" username="root" group="root">
+			</tarfileset>
+		</tar>
+	</target>
+</project>
