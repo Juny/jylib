@@ -1,0 +1,76 @@
+##1 挡板
+##2 登录
+##3 消息类接收
+##4 消息类发送
+##5 toCS类音频
+##6 app发起音视频接收
+##7 app发起音视频发送
+##8 pc发起音视频接收
+##9 pc发起音视频发送
+
+#挡板
+172.21.51.70 sms_simulator 1
+172.21.51.70 secure_simulator 1
+172.21.51.70 pc_simulator 1
+172.21.8.42 hss_simulator 1
+172.21.8.42 pc_simulator 1
+172.21.51.79 pc_vowifi_simulator 1
+172.21.51.73 mgcf 1
+172.21.51.74 mgcf 1
+
+#登录
+172.21.8.31 login 2
+
+#Page消息
+172.21.8.36 page_send 4
+172.21.8.36 page_rev 3
+172.21.8.37 page_sms 4
+
+172.21.8.39 group_send 4
+172.21.8.39 group_rev1 3
+172.21.8.38 group_rev2 3
+172.21.8.38 group_rev3 3
+172.21.8.40 group_rev4 3
+172.21.8.40 group_rev5 3
+
+#Large消息
+172.21.51.73 large_send 4
+172.21.51.73 large_rev 3
+172.21.51.74 large_sms 4
+
+#文件
+172.21.51.75 file_send 4
+172.21.51.76 file_rev 3
+
+#公众
+172.21.51.65 file_send_pub 4
+172.21.51.65 page_send_pub 4
+172.21.51.65 large_send_pub 4
+172.21.51.65 large_rev_pub 3
+
+##app发起音视频
+172.21.51.66 audio_app_cs 5
+#不带同振
+172.21.51.67 app_audio_rev 6
+172.21.51.67 app_audio_send 7
+#带同振
+172.21.51.68 app_audio_rev 6
+172.21.51.68 app_audio_send 7
+#不带同振
+172.21.51.69 app_video_rev 6
+172.21.51.69 app_video_send 7
+
+#pc发起音视频
+172.21.8.38 audio_pc_cs 5
+#app接听 同振pc
+172.21.8.32 pc_audio_send 9
+172.21.8.32 app_audio_rev 8
+#app接听 同振pc
+172.21.8.35 pc_video_send 9
+172.21.8.35 app_video_rev 8
+#同振app
+172.21.8.36 pc_audio_send 9
+172.21.8.36 pc_audio_rev 8
+#同振pc
+172.21.8.37 app_video_send 9
+172.21.8.37 app_video_rev 8
